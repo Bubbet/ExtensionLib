@@ -15,10 +15,6 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         public TemperatureKelvin CriticalTemperature {get;}
         public PressurekPa MinCondensationPressure {get;}
 
-        public VanillaFuelData? FuelData {get; private set;}
-
-        public VanillaOxidizerData? OxidizerData {get; private set;}
-
         public VanillaMaterialBuilder(
             NamespacedId Id,
             double molarMass,
@@ -39,39 +35,6 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
             FreezingTemperature = freezingTemperature;
             CriticalTemperature = criticalTemperature;
             MinCondensationPressure = minCondensationPressure;
-            FuelData = null;
-        }
-
-        public VanillaMaterialBuilder Fuel(
-            MoleQuantity neededOxygen,
-            IEnumerable<KeyValuePair<NamespacedId,MoleQuantity>> products,
-            double reactionScale = 1.0
-        )
-        {
-            if(OxidizerData.HasValue) throw new InvalidOperationException(
-                "Hypergolic materials (materials which are both fuel and oxidizer) are not supported");
-            FuelData = new VanillaFuelData(
-                neededOxygen,
-                products,
-                reactionScale
-            );
-            return this;
-        }
-
-        public VanillaMaterialBuilder Oxidizer(
-            MoleQuantity providedOxygen,
-            IEnumerable<KeyValuePair<NamespacedId,MoleQuantity>> otherProducts,
-            double reactionScale = 1.0
-        )
-        {
-            if(FuelData.HasValue) throw new InvalidOperationException(
-                "Hypergolic materials (materials which are both fuel and oxidizer) are not supported");
-            OxidizerData = new VanillaOxidizerData(
-                providedOxygen,
-                otherProducts,
-                reactionScale
-            );
-            return this;
         }
 
         public VanillaMaterialProperties Build(){
@@ -84,9 +47,7 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                 SpecificLatentHeatOfVaporization,
                 FreezingTemperature,
                 CriticalTemperature,
-                MinCondensationPressure,
-                FuelData,
-                OxidizerData
+                MinCondensationPressure
             );
         }
     }
@@ -120,10 +81,6 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
     public interface IMaterialProperties{
         public NamespacedId Id {get;}
         public IEnumerable<IPhaseProperties> Phases {get;}
-        //TODO: can I make something more general?
-        public VanillaFuelData? FuelData {get;}
-        //TODO: can I make something more general?
-        public VanillaOxidizerData? OxidizerData {get;}
         public IEnumerable<IPhaseProperties> AllowablePhases(TemperatureKelvin temperature, PressurekPa pressure);
 
         //TODO: superheating and supercooling could be supported by TransitionData.NewPhases containing phase.Id,

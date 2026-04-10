@@ -92,8 +92,6 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         public double LiquidMolarVolume {get;}
         public double SolidMolarVolume =>LiquidMolarVolume;
         public SpecificHeat SpecificHeatCapacity {get;}
-        public VanillaFuelData? FuelData{get;}
-        public VanillaOxidizerData? OxidizerData{get;}
         public NamespacedId GasPhaseId => Id / "gas";
         public NamespacedId LiquidPhaseId => Id / "liquid";
         public NamespacedId SolidPhaseId => Id / "solid";
@@ -188,16 +186,9 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
             SpecificHeat specificLatentHeatOfVaporization,
             TemperatureKelvin freezingTemperature,
             TemperatureKelvin criticalTemperature,
-            PressurekPa minCondensationPressure,
-            VanillaFuelData? fuelData = null,
-            VanillaOxidizerData? oxidizerData = null
+            PressurekPa minCondensationPressure
         )
         {
-            if(fuelData.HasValue && oxidizerData.HasValue) {
-                //TODO: is there an easy way to allow this?
-                throw new ArgumentException(
-                    "Hypergolic materials (materials which are both fuel and oxidizer) are not supported");
-            }
             Id = id;
             MolarMass = molarMass;
             LiquidMolarVolume = condensedMolarVolume;
@@ -208,8 +199,6 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
             CriticalTemperature = criticalTemperature;
             BoilingTemperature = EvaporationCoefficients.Inverse(new PressurekPa(100));
             MinCondensationPressure = minCondensationPressure;
-            FuelData = fuelData;
-            OxidizerData = oxidizerData;
             TriplePointTemperature = EvaporationCoefficients.Inverse(MinCondensationPressure);
         }
 
@@ -494,39 +483,6 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                 new MoleEnergy(-depositedQuantity,SpecificLatentHeatOfSublimation.ToDouble()),
                 HeatCapacity.Zero
             );
-        }
-    }
-
-    
-
-    public readonly struct VanillaFuelData{
-        public readonly MoleQuantity NeededOxygen {get;}
-        public readonly IReadOnlyDictionary<NamespacedId,MoleQuantity> Products {get;}
-        public readonly double ReactionScale {get;}
-
-        public VanillaFuelData(
-            MoleQuantity neededOxygen,
-            IEnumerable<KeyValuePair<NamespacedId,MoleQuantity>> products,
-            double reactionScale
-        ){
-            NeededOxygen = neededOxygen;
-            Products = new Dictionary<NamespacedId,MoleQuantity>(products);
-            ReactionScale = reactionScale;
-        }
-    }
-    public readonly struct VanillaOxidizerData{
-        public readonly MoleQuantity ProvidedOxygen {get;}
-        public readonly IReadOnlyDictionary<NamespacedId,MoleQuantity> OtherProducts {get;}
-        public readonly double ReactionScale {get;}
-
-        public VanillaOxidizerData(
-            MoleQuantity providedOxygen,
-            IEnumerable<KeyValuePair<NamespacedId,MoleQuantity>> otherProducts,
-            double reactionScale
-        ){
-            ProvidedOxygen = providedOxygen;
-            OtherProducts = new Dictionary<NamespacedId,MoleQuantity>(otherProducts);
-            ReactionScale = reactionScale;
         }
     }
 }

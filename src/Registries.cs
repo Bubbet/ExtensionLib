@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Assets.Scripts.Atmospherics;
 using Assets.Scripts.Networking;
 using Com.DipoleCat.ExtensionLib.Atmospherics;
+using Com.DipoleCat.ExtensionLib.Atmospherics.Combustion;
 using Com.DipoleCat.ExtensionLib.Networking;
 using HarmonyLib;
 using Unity.Properties;
@@ -25,9 +26,12 @@ namespace Com.DipoleCat.ExtensionLib
             GetRegistry<IMaterialProperties>(MaterialRegistryId)!;
         public static IRegistry<IPhaseProperties> Phases => 
             GetRegistry<IPhaseProperties>(PhaseRegistryId)!;
+        public static IRegistry<ICombustionProperties> Combustion =>
+            GetRegistry<ICombustionProperties>(CombustionRegistryId)!;
 
         public static NamespacedId MaterialRegistryId => new("extensionlib:materials");
         public static NamespacedId PhaseRegistryId => new("extensionlib:phases");
+        public static NamespacedId CombustionRegistryId => new("extensionlib:combustion");
 
         private static readonly HashSet<NamespacedId> expectedRegistries = new();
 
@@ -100,6 +104,15 @@ namespace Com.DipoleCat.ExtensionLib
                 }
             }
             else throw new InvalidOperationException("materials registry is frozen (synced from connected server)");
+        }
+
+        public static void Register(ICombustionProperties combustion)
+        {
+            if (Combustion is IMutableRegistry<ICombustionProperties> mutable)
+            {
+                mutable.Register(combustion.Id, combustion);
+            }
+            else throw new InvalidOperationException("combustions registry is frozen (synced from connected server)");
         }
 
         public static void Register(IPhaseProperties phase){
