@@ -7,6 +7,13 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics.Combustion;
 
 public readonly struct VanillaCombustionProperties : ICombustionProperties
 {
+	private static readonly Dictionary<(NamespacedId, NamespacedId), List<ICombustionProperties>> ByReagents = new();
+	public static List<ICombustionProperties>? GetCombustions(NamespacedId oxidizer, NamespacedId fuel)
+	{
+		ByReagents.TryGetValue((oxidizer, fuel), out var combustions);
+		return combustions;
+	}
+	
 	public NamespacedId Id { get; }
 	public NamespacedId Oxidizer { get; }
 	public MoleQuantity OxidizerQuantity { get; }
@@ -37,6 +44,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
 		FuelQuantity = fuelQuantity;
 		Oxidizer = oxidizer;
 		OxidizerQuantity = oxidizerQuantity;
+		if (!ByReagents.TryAdd((oxidizer, fuel), [this]))
+			ByReagents[(oxidizer, fuel)].Add(this);
 		Results = new ReadOnlyDictionary<NamespacedId, MoleQuantity>(results);
 	}
 
@@ -90,10 +99,17 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
 	{
 		var properties = new[]
 		{
-			new VanillaCombustionProperties(new NamespacedId(@namespace, oxidizer.Name + "/gas_" + fuel.Name + "/gas"), oxidizer / "gas", oxidizerQuantity, fuel / "gas", fuelQuantity, results),
-			new VanillaCombustionProperties(new NamespacedId(@namespace, oxidizer.Name + "/gas_" + fuel.Name + "/liquid"), oxidizer / "gas", oxidizerQuantity, fuel / "liquid", fuelQuantity, results),
-			new VanillaCombustionProperties(new NamespacedId(@namespace, oxidizer.Name + "/liquid_" + fuel.Name + "/liquid"), oxidizer / "liquid", oxidizerQuantity, fuel / "liquid", fuelQuantity, results),
-			new VanillaCombustionProperties(new NamespacedId(@namespace, oxidizer.Name + "/liquid_" + fuel.Name + "/gas"), oxidizer / "liquid", oxidizerQuantity, fuel / "gas", fuelQuantity, results),
+			new VanillaCombustionProperties(new NamespacedId(@namespace, oxidizer.Name + "/gas_" + fuel.Name + "/gas"),
+				oxidizer / "gas", oxidizerQuantity, fuel / "gas", fuelQuantity, results),
+			new VanillaCombustionProperties(
+				new NamespacedId(@namespace, oxidizer.Name + "/gas_" + fuel.Name + "/liquid"), oxidizer / "gas",
+				oxidizerQuantity, fuel / "liquid", fuelQuantity, results),
+			new VanillaCombustionProperties(
+				new NamespacedId(@namespace, oxidizer.Name + "/liquid_" + fuel.Name + "/liquid"), oxidizer / "liquid",
+				oxidizerQuantity, fuel / "liquid", fuelQuantity, results),
+			new VanillaCombustionProperties(
+				new NamespacedId(@namespace, oxidizer.Name + "/liquid_" + fuel.Name + "/gas"), oxidizer / "liquid",
+				oxidizerQuantity, fuel / "gas", fuelQuantity, results),
 		};
 		return properties.Cast<ICombustionProperties>();
 	}
