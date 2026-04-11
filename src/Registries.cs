@@ -115,6 +115,13 @@ namespace Com.DipoleCat.ExtensionLib
             else throw new InvalidOperationException("combustions registry is frozen (synced from connected server)");
         }
 
+        public static void RegisterAll(IEnumerable<ICombustionProperties> combustions)
+        {
+            foreach (var combustion in combustions){
+                Register(combustion);
+            }
+        }
+
         public static void Register(IPhaseProperties phase){
             if (Phases is IMutableRegistry<IPhaseProperties> mutable){
                 mutable.Register(phase.Id,phase);

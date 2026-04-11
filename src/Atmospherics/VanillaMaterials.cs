@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using Assets.Scripts.Atmospherics;
 using Com.DipoleCat.ExtensionLib.Atmospherics.Combustion;
@@ -132,14 +133,17 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
             .Build();
             Registries.Register(nitrousOxide);
 
-            var combustionMethaneOxygen =
-                BuildVanillaCombustion(oxygen.Id, new MoleQuantity(2.0), methane.Id, MoleQuantity.One)
-                    .WithResult(pollutant.Id, new MoleQuantity(3.0))
-                    .WithResult(carbonDioxide.Id, new MoleQuantity(6.0));
-            Registries.Register(combustionMethaneOxygen);
-            
-            //TODO: the other combustions
-        }
+			var combustionMethaneOxygen =
+                VanillaCombustionProperties.AllStates("stationeers", oxygen.Id, new MoleQuantity(2.0), methane.Id, MoleQuantity.One,
+					new Dictionary<NamespacedId, MoleQuantity>()
+					{
+						{ pollutant.Id, new MoleQuantity(3.0) },
+						{ carbonDioxide.Id, new MoleQuantity(6.0) }
+					});
+			Registries.RegisterAll(combustionMethaneOxygen);
+
+			//TODO: the other combustions
+		}
 
         private static EvaporationCoefficients GetVanillaLiquidCoefficients(
             Chemistry.GasType gasType
@@ -177,10 +181,5 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                 Mole.MinLiquidPressure(gasType)
             );
         }
-
-        private static VanillaCombustionProperties BuildVanillaCombustion(NamespacedId oxidizer, MoleQuantity oxidizerQuantity, NamespacedId fuel, MoleQuantity fuelQuantity)
-        {
-            return new VanillaCombustionProperties("stationeers",  oxidizer, oxidizerQuantity, fuel, fuelQuantity);
-        }
-    }
+	}
 }
