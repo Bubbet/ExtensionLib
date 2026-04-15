@@ -7,20 +7,20 @@ using static Assets.Scripts.Atmospherics.Chemistry;
 
 namespace Com.DipoleCat.ExtensionLib.Atmospherics
 {
-    public static class VanillaMaterials {
-        public static NamespacedId Oxygen => new NamespacedId("stationeers","oxygen");
-        public static NamespacedId Nitrogen => new NamespacedId("stationeers","nitrogen");
-        public static NamespacedId CarbonDioxide => new NamespacedId("stationeers","carbon_dioxide");
-        public static NamespacedId Methane => new NamespacedId("stationeers","volatiles");
-        public static NamespacedId Pollutant => new NamespacedId("stationeers","pollutant");
-        public static NamespacedId NitrousOxide => new NamespacedId("stationeers","nitrous_oxide");
+    public static class VanillaMaterials
+    {
+        public static NamespacedId Oxygen => new NamespacedId("stationeers", "oxygen");
+        public static NamespacedId Nitrogen => new NamespacedId("stationeers", "nitrogen");
+        public static NamespacedId CarbonDioxide => new NamespacedId("stationeers", "carbon_dioxide");
+        public static NamespacedId Methane => new NamespacedId("stationeers", "volatiles");
+        public static NamespacedId Pollutant => new NamespacedId("stationeers", "pollutant");
+        public static NamespacedId NitrousOxide => new NamespacedId("stationeers", "nitrous_oxide");
 
-        public static NamespacedId Water => new NamespacedId("stationeers","water");
-        public static NamespacedId PollutedWater => new NamespacedId("stationeers","polluted_water");
+        public static NamespacedId Water => new NamespacedId("stationeers", "water");
+        public static NamespacedId PollutedWater => new NamespacedId("stationeers", "polluted_water");
 
         public static GasType? GasType(NamespacedId phaseId){
-            return phaseId.Id switch
-            {
+            return phaseId.Id switch{
                 "stationeers:oxygen/gas" => (GasType?)Assets.Scripts.Atmospherics.Chemistry.GasType.Oxygen,
                 "stationeers:oxygen/liquid" => (GasType?)Assets.Scripts.Atmospherics.Chemistry.GasType.LiquidOxygen,
                 "stationeers:nitrogen/gas" => (GasType?)Assets.Scripts.Atmospherics.Chemistry.GasType.Nitrogen,
@@ -41,8 +41,7 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         }
 
         public static NamespacedId? MaterialId(GasType gasType){
-            return gasType switch
-            {
+            return gasType switch{
                 Assets.Scripts.Atmospherics.Chemistry.GasType.Oxygen or Assets.Scripts.Atmospherics.Chemistry.GasType.LiquidOxygen => (NamespacedId?)Oxygen,
                 Assets.Scripts.Atmospherics.Chemistry.GasType.Nitrogen or Assets.Scripts.Atmospherics.Chemistry.GasType.LiquidNitrogen => (NamespacedId?)Nitrogen,
                 Assets.Scripts.Atmospherics.Chemistry.GasType.CarbonDioxide or Assets.Scripts.Atmospherics.Chemistry.GasType.LiquidCarbonDioxide => (NamespacedId?)CarbonDioxide,
@@ -56,8 +55,7 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         }
 
         public static NamespacedId? PhaseId(GasType gasType){
-            return gasType switch
-            {
+            return gasType switch{
                 Assets.Scripts.Atmospherics.Chemistry.GasType.Oxygen => Oxygen / "gas",
                 Assets.Scripts.Atmospherics.Chemistry.GasType.LiquidOxygen => Oxygen / "liquid",
                 Assets.Scripts.Atmospherics.Chemistry.GasType.Nitrogen => Nitrogen / "gas",
@@ -78,77 +76,42 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         }
 
         internal static void RegisterVanillaMaterials(){
-            Registries.CreateRegistry(Registries.MaterialRegistryId,new JsonSerializationCodec<IMaterialProperties>());
-            Registries.CreateRegistry(Registries.PhaseRegistryId,new JsonSerializationCodec<IPhaseProperties>());
+            Registries.CreateRegistry(Registries.MaterialRegistryId, new JsonSerializationCodec<IMaterialProperties>());
+            Registries.CreateRegistry(Registries.PhaseRegistryId, new JsonSerializationCodec<IPhaseProperties>());
 
             //materials and their phases
-            var oxygen = BuildVanilla(
-                "oxygen",
-                Chemistry.GasType.Oxygen
-            )
-            .Build();
-            Registries.Register(oxygen);
+            Registries.Register(BuildVanilla("oxygen", Chemistry.GasType.Oxygen));
 
-            var carbonDioxide = BuildVanilla(
-                "carbon_dioxide",
-                Chemistry.GasType.CarbonDioxide
-            )
-            .Build();
-            Registries.Register(carbonDioxide);
+            Registries.Register(BuildVanilla("carbon_dioxide", Chemistry.GasType.CarbonDioxide));
 
-            var methane = BuildVanilla(
-                "methane",
-                Chemistry.GasType.Methane
-            )
-            .Build();
-            Registries.Register(methane);
+            Registries.Register(BuildVanilla("methane", Chemistry.GasType.Methane));
 
-            var nitrogen = BuildVanilla(
-                "nitrogen",
-                Chemistry.GasType.Nitrogen
-            )
-            .Build();
-            Registries.Register(nitrogen);
+            Registries.Register(BuildVanilla("nitrogen", Chemistry.GasType.Nitrogen));
 
-            var pollutant = BuildVanilla(
-                "pollutant",
-                Chemistry.GasType.Pollutant
-            )
-            .Build();
-            Registries.Register(pollutant);
+            Registries.Register(BuildVanilla("pollutant", Chemistry.GasType.Pollutant));
 
-            var water = BuildVanilla(
-                "water",
-                Chemistry.GasType.Steam
-            )
-            .Build();
-            Registries.Register(water);
+            Registries.Register(BuildVanilla("water", Chemistry.GasType.Steam));
 
             //TODO: polluted water, changes materials on evaporation
 
-            var nitrousOxide = BuildVanilla(
-                "nitrous_oxide",
-                Chemistry.GasType.NitrousOxide
-            )
-            .Build();
-            Registries.Register(nitrousOxide);
+            Registries.Register(BuildVanilla("nitrous_oxide", Chemistry.GasType.NitrousOxide));
 
-			var combustionMethaneOxygen =
-                VanillaCombustionProperties.AllStates("stationeers", oxygen.Id, new MoleQuantity(2.0), methane.Id, MoleQuantity.One,
-					new Dictionary<NamespacedId, MoleQuantity>()
-					{
-						{ pollutant.Id, new MoleQuantity(3.0) },
-						{ carbonDioxide.Id, new MoleQuantity(6.0) }
-					});
-			Registries.RegisterAll(combustionMethaneOxygen);
+            Registries.RegisterAll(
+                VanillaCombustionProperties.MakeForLiquidAndGas(
+                    "stationeers",
+                    MaterialId(Chemistry.GasType.Oxygen)!.Value,
+                    new MoleQuantity(2.0),
+                    MaterialId(Chemistry.GasType.Methane)!.Value,
+                    MoleQuantity.One,
+                    new Dictionary<NamespacedId, MoleQuantity>(){
+                        {MaterialId(Chemistry.GasType.Pollutant)!.Value, new MoleQuantity(3.0)},
+                        {MaterialId(Chemistry.GasType.CarbonDioxide)!.Value, new MoleQuantity(6.0)}
+                    }));
 
-			//TODO: the other combustions
-		}
+            //TODO: the other combustions
+        }
 
-        private static EvaporationCoefficients GetVanillaLiquidCoefficients(
-            Chemistry.GasType gasType
-        )
-        {
+        private static EvaporationCoefficients GetVanillaLiquidCoefficients(Chemistry.GasType gasType){
             var antoineAMethod = typeof(MoleHelper).GetMethod(
                 "EvaporationCoefficientA",
                 BindingFlags.NonPublic | BindingFlags.Static
@@ -164,13 +127,13 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
             );
         }
 
-        private static VanillaMaterialBuilder BuildVanilla(
+        private static VanillaMaterialProperties BuildVanilla(
             string name,
             Chemistry.GasType gasType
         ){
             var liquidType = MoleHelper.CondensationType(gasType);
-            return new VanillaMaterialBuilder(
-                new NamespacedId("stationeers",name),
+            return new VanillaMaterialProperties(
+                new NamespacedId("stationeers", name),
                 Mole.MolarMass(gasType),
                 Mole.MolarVolume(liquidType).ToDouble(),
                 new SpecificHeat(Chemistry.SpecificHeat(gasType)),
@@ -181,5 +144,5 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                 Mole.MinLiquidPressure(gasType)
             );
         }
-	}
+    }
 }

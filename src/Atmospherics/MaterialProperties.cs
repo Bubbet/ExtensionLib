@@ -4,54 +4,6 @@ using System.Collections.Generic;
 
 namespace Com.DipoleCat.ExtensionLib.Atmospherics
 {
-    public class VanillaMaterialBuilder{
-        public NamespacedId Id {get;}
-        public double MolarMass {get;}
-        public double CondensedMolarVolume {get;}
-        public SpecificHeat SpecificHeatCapacity { get; }
-        public EvaporationCoefficients LiquidEvaporationCoefficients {get;}
-        public SpecificHeat SpecificLatentHeatOfVaporization {get;}
-        public TemperatureKelvin FreezingTemperature {get;}
-        public TemperatureKelvin CriticalTemperature {get;}
-        public PressurekPa MinCondensationPressure {get;}
-
-        public VanillaMaterialBuilder(
-            NamespacedId Id,
-            double molarMass,
-            double condensedMolarVolume,
-            SpecificHeat specificHeatCapacity,
-            EvaporationCoefficients liquidEvaporationCoefficients,
-            SpecificHeat specificLatentHeatOfVaporization,
-            TemperatureKelvin freezingTemperature,
-            TemperatureKelvin criticalTemperature,
-            PressurekPa minCondensationPressure
-        ){
-            this.Id = Id;
-            MolarMass = molarMass;
-            CondensedMolarVolume = condensedMolarVolume;
-            SpecificHeatCapacity = specificHeatCapacity;
-            LiquidEvaporationCoefficients = liquidEvaporationCoefficients;
-            SpecificLatentHeatOfVaporization = specificLatentHeatOfVaporization;
-            FreezingTemperature = freezingTemperature;
-            CriticalTemperature = criticalTemperature;
-            MinCondensationPressure = minCondensationPressure;
-        }
-
-        public VanillaMaterialProperties Build(){
-            return new VanillaMaterialProperties(
-                Id,
-                MolarMass,
-                CondensedMolarVolume,
-                SpecificHeatCapacity,
-                LiquidEvaporationCoefficients,
-                SpecificLatentHeatOfVaporization,
-                FreezingTemperature,
-                CriticalTemperature,
-                MinCondensationPressure
-            );
-        }
-    }
-
     public readonly struct PhaseTransition{
         public readonly IReadOnlyDictionary<NamespacedId,MoleQuantity> NewPhases {get;}
         public readonly VolumeLitres DeltaCondensedVolume {get;}
