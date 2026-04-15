@@ -8,15 +8,13 @@ public interface ICombustionProperties : IReactionProperties
 {
 	public NamespacedId Id { get; }
 
-	public NamespacedId Oxidizer { get; }
+	public NamespacedId OxidizerSpecies { get; }
 	public MoleQuantity OxidizerQuantity { get; }
-	public NamespacedId Fuel { get; }
+	public NamespacedId FuelSpecies { get; }
 	public MoleQuantity FuelQuantity { get; }
 
-	IReadOnlyDictionary<NamespacedId, MoleQuantity> IReactionProperties.Reactants =>
-		new ReadOnlyDictionary<NamespacedId, MoleQuantity>(new Dictionary<NamespacedId, MoleQuantity>
-		{
-			{ Oxidizer, OxidizerQuantity },
-			{ Fuel, FuelQuantity },
-		});
+    IReadOnlyDictionary<NamespacedId, MoleQuantity> IReactionProperties.Reactants => new Dictionary<NamespacedId, MoleQuantity>{
+        {OxidizerSpecies, OxidizerQuantity},
+        {FuelSpecies, FuelQuantity},
+    };
 }

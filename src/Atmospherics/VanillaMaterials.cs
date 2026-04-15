@@ -103,6 +103,7 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                     new MoleQuantity(2.0),
                     MaterialId(Chemistry.GasType.Methane)!.Value,
                     MoleQuantity.One,
+                    new MoleEnergy(0.0),
                     new Dictionary<NamespacedId, MoleQuantity>(){
                         {MaterialId(Chemistry.GasType.Pollutant)!.Value, new MoleQuantity(3.0)},
                         {MaterialId(Chemistry.GasType.CarbonDioxide)!.Value, new MoleQuantity(6.0)}
