@@ -21,7 +21,7 @@ namespace Com.Dipolecat.ExtensionLib.Preload
             Debug.Assert(moleType!=null,"Could not find Mole type");
 
             var modPhasesField = new FieldDefinition(
-                "modPhases",
+                "_extensionlib_phases",
                 FieldAttributes.Public,
                 assembly.MainModule
                     .ImportReference(typeof(Dictionary<,>))
@@ -59,6 +59,9 @@ namespace Com.Dipolecat.ExtensionLib.Preload
 
                 if(lastInstruction.OpCode == OpCodes.Ret) ilProcessor.Append(lastInstruction);
             }
+
+            var modPhasesIdField = new FieldDefinition("_extensionlib_phaseid", FieldAttributes.Public, assembly.MainModule.TypeSystem.UInt32);
+            moleType.Fields.Add(modPhasesIdField);
         }
     }
 }
