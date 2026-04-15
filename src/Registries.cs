@@ -7,6 +7,7 @@ using Assets.Scripts.Atmospherics;
 using Assets.Scripts.Networking;
 using Com.DipoleCat.ExtensionLib.Atmospherics;
 using Com.DipoleCat.ExtensionLib.Atmospherics.Combustion;
+using Com.Dipolecat.ExtensionLib.Atmospherics.Combustion.Registry;
 using Com.DipoleCat.ExtensionLib.Networking;
 using HarmonyLib;
 using Unity.Properties;
@@ -26,8 +27,8 @@ namespace Com.DipoleCat.ExtensionLib
             GetRegistry<IMaterialProperties>(MaterialRegistryId)!;
         public static IRegistry<IPhaseProperties> Phases => 
             GetRegistry<IPhaseProperties>(PhaseRegistryId)!;
-        public static IRegistry<ICombustionProperties> Combustion =>
-            GetRegistry<ICombustionProperties>(CombustionRegistryId)!;
+        public static IRegistry<ICombustionRegistry> Combustion =>
+            GetRegistry<ICombustionRegistry>(CombustionRegistryId)!;
 
         public static NamespacedId MaterialRegistryId => new("extensionlib:materials");
         public static NamespacedId PhaseRegistryId => new("extensionlib:phases");
@@ -91,6 +92,14 @@ namespace Com.DipoleCat.ExtensionLib
             where T: class
         {
             var registry = new SimpleRegistry<T>(codec);
+            local_registries[registryId] = registry;
+            codecs[registryId] = codec;
+            return registry;
+        }
+        
+        public static IMutableRegistry<ICombustionProperties> CreateCombustionRegistry(NamespacedId registryId, INetworkCodec<ICombustionProperties> codec)
+        {
+            var registry = new CombustionRegistry(codec);
             local_registries[registryId] = registry;
             codecs[registryId] = codec;
             return registry;

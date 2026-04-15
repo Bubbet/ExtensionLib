@@ -78,6 +78,7 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         internal static void RegisterVanillaMaterials(){
             Registries.CreateRegistry(Registries.MaterialRegistryId, new JsonSerializationCodec<IMaterialProperties>());
             Registries.CreateRegistry(Registries.PhaseRegistryId, new JsonSerializationCodec<IPhaseProperties>());
+            Registries.CreateRegistry(Registries.CombustionRegistryId, new JsonSerializationCodec<ICombustionProperties>());
 
             //materials and their phases
             Registries.Register(BuildVanilla("oxygen", Chemistry.GasType.Oxygen));

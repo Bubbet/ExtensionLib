@@ -36,7 +36,7 @@ namespace Com.DipoleCat.ExtensionLib
                 id_list.Add(id);
                 data_list.Add(data);
             }
-            return new FrozenRegistry<T>(id_map,id_list,data_list,codec);
+            return new FrozenRegistry<T>(id_map,id_list,data_list,codec); // TODO maybe change this to support deserializing different types of registries.
         }
     }
 
