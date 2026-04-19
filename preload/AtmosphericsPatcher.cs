@@ -10,10 +10,6 @@ using Mono.Cecil.Rocks;
 namespace Com.Dipolecat.ExtensionLib.Preload
 {
     public static class AtmosphericsPatcher{
-        [UsedImplicitly]
-        public static IEnumerable<string> TargetDLLs { get; } = ["Assembly-CSharp.dll"];
-
-        [UsedImplicitly]
         public static void Patch(AssemblyDefinition assembly){
             var gasMixtureType = assembly.MainModule.GetType("Assets.Scripts.Atmospherics.GasMixture");
             Debug.Assert(gasMixtureType!=null,"Could not find GasMixture type");
