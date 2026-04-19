@@ -12,11 +12,12 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
     public NamespacedId FuelSpecies {get;}
     public MoleQuantity FuelQuantity {get;}
     public TemperatureKelvin AutoIgnitionTemperature {get;}
+    public MoleEnergy CombustionEnergy {get;}
 
     public IReadOnlyDictionary<NamespacedId, MoleQuantity> Results {get;}
 
     MoleEnergy IReactionProperties.MolarEnthalpy(TemperatureKelvin temperature, PressurekPa pressure){
-        throw new System.NotImplementedException();
+        return CombustionEnergy;
     }
     public float ReactionRate(GasMixture mixture){
         throw new System.NotImplementedException();
@@ -28,7 +29,7 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         MoleQuantity oxidizerQuantity,
         NamespacedId fuelSpecies,
         MoleQuantity fuelQuantity,
-        //MoleEnergy molarEnthalpy, TODO im not sure what to be doing with this
+        MoleEnergy combustionEnergy,
         TemperatureKelvin autoIgnitionTemperature,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
@@ -37,6 +38,7 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         FuelQuantity = fuelQuantity;
         OxidizerSpecies = oxidizerSpecies;
         OxidizerQuantity = oxidizerQuantity;
+        CombustionEnergy = combustionEnergy;
         AutoIgnitionTemperature = autoIgnitionTemperature;
         Results = new ReadOnlyDictionary<NamespacedId, MoleQuantity>(results);
     }
@@ -47,8 +49,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         MoleQuantity oxidizerQuantity,
         NamespacedId fuelSpecies,
         MoleQuantity fuelQuantity,
+        MoleEnergy combustionEnergy,
         TemperatureKelvin autoIgnitionTemperature,
-        //MoleEnergy molarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ) : this(
         new NamespacedId(
@@ -59,16 +61,16 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         oxidizerQuantity,
         fuelSpecies,
         fuelQuantity,
+        combustionEnergy,
         autoIgnitionTemperature,
-        //molarEnthalpy,
         results
     ){}
 
     public static VanillaCombustionProperties MakeHypergolic(
         NamespacedId id,
         NamespacedId hypergolicSpecies,
+        MoleEnergy combustionEnergy,
         TemperatureKelvin autoIgnitionTemperature,
-        //MoleEnergy molarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         return new VanillaCombustionProperties(
@@ -77,8 +79,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             MoleQuantity.One,
             hypergolicSpecies,
             MoleQuantity.One,
+            combustionEnergy,
             autoIgnitionTemperature,
-            //molarEnthalpy,
             results
         );
     }
@@ -86,15 +88,15 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
     public static VanillaCombustionProperties MakeHypergolic(
         string @namespace,
         NamespacedId hypergolicSpecies,
+        MoleEnergy combustionEnergy,
         TemperatureKelvin autoIgnitionTemperature,
-        //MoleEnergy gasCombustionMolarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         return MakeHypergolic(
             new NamespacedId(@namespace, hypergolicSpecies.Name + "_" + hypergolicSpecies.Name),
             hypergolicSpecies,
+            combustionEnergy,
             autoIgnitionTemperature,
-            //gasCombustionMolarEnthalpy,
             results
         );
     }
@@ -103,8 +105,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         string @namespace,
         NamespacedId hypergolicGasId,
         NamespacedId hypergolicLiquidId,
-        //MoleEnergy hypergolicLatentHeat,
-        //MoleEnergy gasCombustionMolarEnthalpy,
+        MoleEnergy hypergolicLatentHeat,
+        MoleEnergy combustionEnergy,
         TemperatureKelvin autoIgnitionTemperature,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
@@ -112,14 +114,14 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             @namespace,
             hypergolicGasId,
             hypergolicLiquidId,
-            //hypergolicLatentHeat,
             MoleQuantity.One,
+            hypergolicLatentHeat,
             hypergolicGasId,
             hypergolicLiquidId,
-            //hypergolicLatentHeat,
             MoleQuantity.One,
+            hypergolicLatentHeat,
+            combustionEnergy,
             autoIgnitionTemperature,
-            //gasCombustionMolarEnthalpy,
             results
         );
     }
@@ -129,11 +131,13 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         NamespacedId oxidizerGasId,
         NamespacedId oxidizerLiquidId,
         MoleQuantity oxidizerQuantity,
+        MoleEnergy oxidizerLatentHeat,
         NamespacedId fuelGasId,
         NamespacedId fuelLiquidId,
         MoleQuantity fuelQuantity,
+        MoleEnergy fuelLatentHeat,
+        MoleEnergy combustionEnergy,
         TemperatureKelvin autoIgnitionTemperature,
-        //MoleEnergy gasCombustionMolarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         yield return new VanillaCombustionProperties(
@@ -142,8 +146,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             oxidizerQuantity,
             fuelGasId,
             fuelQuantity,
+            combustionEnergy,
             autoIgnitionTemperature,
-            //gasCombustionMolarEnthalpy,
             results);
         
         yield return new VanillaCombustionProperties(
@@ -152,8 +156,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             oxidizerQuantity,
             fuelGasId,
             fuelQuantity,
+            combustionEnergy - oxidizerLatentHeat,
             autoIgnitionTemperature,
-            //gasCombustionMolarEnthalpy - oxidizerLatentHeat,
             results);
         
         yield return new VanillaCombustionProperties(
@@ -162,18 +166,18 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             oxidizerQuantity,
             fuelLiquidId,
             fuelQuantity,
+            combustionEnergy - fuelLatentHeat,
             autoIgnitionTemperature,
-            //gasCombustionMolarEnthalpy - fuelLatentHeat,
             results);
-        
+
         yield return new VanillaCombustionProperties(
             new NamespacedId(@namespace, oxidizerLiquidId.Name + "_" + fuelLiquidId.Name),
             oxidizerLiquidId,
             oxidizerQuantity,
             fuelLiquidId,
             fuelQuantity,
+            combustionEnergy - oxidizerLatentHeat - fuelLatentHeat,
             autoIgnitionTemperature,
-            //gasCombustionMolarEnthalpy - oxidizerLatentHeat - fuelLatentHeat,
             results);
     }
 }

@@ -160,9 +160,12 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                 oxidizerGasMaterialId,
                 oxidizerLiquidId,
                 combustionResult.OxidiserMoleCount,
+                new MoleEnergy(Mole.LatentHeatOfVaporization(oxidizerType)),
                 fuelGasMaterialId,
                 fuelLiquidId,
                 combustionResult.FuelMoleCount,
+                new MoleEnergy(Mole.LatentHeatOfVaporization(fuelType)),
+                new MoleEnergy(oxidizerMole.Enthalpy() * oxidizerMole.EnthalpyMultiplier + fuelMole.Enthalpy() * oxidizerMole.EnthalpyMultiplier),
                 fuelMole.AutoIgnitionTemperature - oxidizerMole.AutoIgnitionOffset,
                 results);
         }
