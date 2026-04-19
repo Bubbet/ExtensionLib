@@ -12,6 +12,8 @@ public interface ICombustionProperties : IReactionProperties
 	public MoleQuantity OxidizerQuantity { get; }
 	public NamespacedId FuelSpecies { get; }
 	public MoleQuantity FuelQuantity { get; }
+    
+    public TemperatureKelvin AutoIgnitionTemperature { get; }
 
     IReadOnlyDictionary<NamespacedId, MoleQuantity> IReactionProperties.Reactants => new Dictionary<NamespacedId, MoleQuantity>{
         {OxidizerSpecies, OxidizerQuantity},

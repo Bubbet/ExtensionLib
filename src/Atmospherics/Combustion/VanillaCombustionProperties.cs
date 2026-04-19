@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Assets.Scripts.Atmospherics;
 
 namespace Com.DipoleCat.ExtensionLib.Atmospherics.Combustion;
@@ -12,10 +11,13 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
     public MoleQuantity OxidizerQuantity {get;}
     public NamespacedId FuelSpecies {get;}
     public MoleQuantity FuelQuantity {get;}
+    public TemperatureKelvin AutoIgnitionTemperature {get;}
 
     public IReadOnlyDictionary<NamespacedId, MoleQuantity> Results {get;}
-    public MoleEnergy MolarEnthalpy {get;}
 
+    MoleEnergy IReactionProperties.MolarEnthalpy(TemperatureKelvin temperature, PressurekPa pressure){
+        throw new System.NotImplementedException();
+    }
     public float ReactionRate(GasMixture mixture){
         throw new System.NotImplementedException();
     }
@@ -26,7 +28,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         MoleQuantity oxidizerQuantity,
         NamespacedId fuelSpecies,
         MoleQuantity fuelQuantity,
-        MoleEnergy molarEnthalpy,
+        //MoleEnergy molarEnthalpy, TODO im not sure what to be doing with this
+        TemperatureKelvin autoIgnitionTemperature,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         Id = id;
@@ -34,8 +37,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         FuelQuantity = fuelQuantity;
         OxidizerSpecies = oxidizerSpecies;
         OxidizerQuantity = oxidizerQuantity;
+        AutoIgnitionTemperature = autoIgnitionTemperature;
         Results = new ReadOnlyDictionary<NamespacedId, MoleQuantity>(results);
-        MolarEnthalpy = molarEnthalpy;
     }
 
     public VanillaCombustionProperties(
@@ -44,7 +47,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         MoleQuantity oxidizerQuantity,
         NamespacedId fuelSpecies,
         MoleQuantity fuelQuantity,
-        MoleEnergy molarEnthalpy,
+        TemperatureKelvin autoIgnitionTemperature,
+        //MoleEnergy molarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ) : this(
         new NamespacedId(
@@ -55,14 +59,16 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
         oxidizerQuantity,
         fuelSpecies,
         fuelQuantity,
-        molarEnthalpy,
+        autoIgnitionTemperature,
+        //molarEnthalpy,
         results
     ){}
 
     public static VanillaCombustionProperties MakeHypergolic(
         NamespacedId id,
         NamespacedId hypergolicSpecies,
-        MoleEnergy molarEnthalpy,
+        TemperatureKelvin autoIgnitionTemperature,
+        //MoleEnergy molarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         return new VanillaCombustionProperties(
@@ -71,7 +77,8 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             MoleQuantity.One,
             hypergolicSpecies,
             MoleQuantity.One,
-            molarEnthalpy,
+            autoIgnitionTemperature,
+            //molarEnthalpy,
             results
         );
     }
@@ -79,86 +86,94 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
     public static VanillaCombustionProperties MakeHypergolic(
         string @namespace,
         NamespacedId hypergolicSpecies,
-        MoleEnergy molarEnthalpy,
+        TemperatureKelvin autoIgnitionTemperature,
+        //MoleEnergy gasCombustionMolarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         return MakeHypergolic(
             new NamespacedId(@namespace, hypergolicSpecies.Name + "_" + hypergolicSpecies.Name),
             hypergolicSpecies,
-            molarEnthalpy,
+            autoIgnitionTemperature,
+            //gasCombustionMolarEnthalpy,
             results
         );
     }
 
     public static IEnumerable<ICombustionProperties> MakeHypergolicForLiquidAndGas(
         string @namespace,
-        NamespacedId hypergolicMaterial,
-        MoleEnergy molarEnthalpy,
+        NamespacedId hypergolicGasId,
+        NamespacedId hypergolicLiquidId,
+        //MoleEnergy hypergolicLatentHeat,
+        //MoleEnergy gasCombustionMolarEnthalpy,
+        TemperatureKelvin autoIgnitionTemperature,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
         return MakeForLiquidAndGas(
             @namespace,
-            hypergolicMaterial,
+            hypergolicGasId,
+            hypergolicLiquidId,
+            //hypergolicLatentHeat,
             MoleQuantity.One,
-            hypergolicMaterial,
+            hypergolicGasId,
+            hypergolicLiquidId,
+            //hypergolicLatentHeat,
             MoleQuantity.One,
-            molarEnthalpy,
+            autoIgnitionTemperature,
+            //gasCombustionMolarEnthalpy,
             results
         );
     }
-    
+
     public static IEnumerable<ICombustionProperties> MakeForLiquidAndGas(
         string @namespace,
-        NamespacedId oxidizerMaterial,
+        NamespacedId oxidizerGasId,
+        NamespacedId oxidizerLiquidId,
         MoleQuantity oxidizerQuantity,
-        NamespacedId fuelMaterial,
+        NamespacedId fuelGasId,
+        NamespacedId fuelLiquidId,
         MoleQuantity fuelQuantity,
-        MoleEnergy molarEnthalpy,
+        TemperatureKelvin autoIgnitionTemperature,
+        //MoleEnergy gasCombustionMolarEnthalpy,
         IDictionary<NamespacedId, MoleQuantity> results
     ){
-        // TODO solve actual molarEnthalpy for liquid variants
-        var properties = new[]{
-            new VanillaCombustionProperties(
-                new NamespacedId(@namespace,
-                    oxidizerMaterial.Name + "/gas_" + fuelMaterial.Name + "/gas"),
-                oxidizerMaterial / "gas",
-                oxidizerQuantity,
-                fuelMaterial / "gas",
-                fuelQuantity,
-                molarEnthalpy,
-                results
-            ),
-            new VanillaCombustionProperties(
-                new NamespacedId(@namespace,
-                    oxidizerMaterial.Name + "/gas_" + fuelMaterial.Name + "/liquid"),
-                oxidizerMaterial / "gas",
-                oxidizerQuantity,
-                fuelMaterial / "liquid",
-                fuelQuantity,
-                molarEnthalpy,
-                results
-            ),
-            new VanillaCombustionProperties(
-                new NamespacedId(@namespace,
-                    oxidizerMaterial.Name + "/liquid_" + fuelMaterial.Name + "/liquid"),
-                oxidizerMaterial / "liquid",
-                oxidizerQuantity,
-                fuelMaterial / "liquid",
-                fuelQuantity,
-                molarEnthalpy,
-                results
-            ),
-            new VanillaCombustionProperties(
-                new NamespacedId(@namespace,
-                    oxidizerMaterial.Name + "/liquid_" + fuelMaterial.Name + "/gas"),
-                oxidizerMaterial / "liquid",
-                oxidizerQuantity,
-                fuelMaterial / "gas",
-                fuelQuantity,
-                molarEnthalpy,
-                results
-            ),
-        };
-        return properties.Cast<ICombustionProperties>();
+        yield return new VanillaCombustionProperties(
+            new NamespacedId(@namespace, oxidizerGasId.Name + "_" + fuelGasId.Name),
+            oxidizerGasId,
+            oxidizerQuantity,
+            fuelGasId,
+            fuelQuantity,
+            autoIgnitionTemperature,
+            //gasCombustionMolarEnthalpy,
+            results);
+        
+        yield return new VanillaCombustionProperties(
+            new NamespacedId(@namespace, oxidizerLiquidId.Name + "_" + fuelGasId.Name),
+            oxidizerLiquidId,
+            oxidizerQuantity,
+            fuelGasId,
+            fuelQuantity,
+            autoIgnitionTemperature,
+            //gasCombustionMolarEnthalpy - oxidizerLatentHeat,
+            results);
+        
+        yield return new VanillaCombustionProperties(
+            new NamespacedId(@namespace, oxidizerGasId.Name + "_" + fuelLiquidId.Name),
+            oxidizerGasId,
+            oxidizerQuantity,
+            fuelLiquidId,
+            fuelQuantity,
+            autoIgnitionTemperature,
+            //gasCombustionMolarEnthalpy - fuelLatentHeat,
+            results);
+        
+        yield return new VanillaCombustionProperties(
+            new NamespacedId(@namespace, oxidizerLiquidId.Name + "_" + fuelLiquidId.Name),
+            oxidizerLiquidId,
+            oxidizerQuantity,
+            fuelLiquidId,
+            fuelQuantity,
+            autoIgnitionTemperature,
+            //gasCombustionMolarEnthalpy - oxidizerLatentHeat - fuelLatentHeat,
+            results);
     }
 }

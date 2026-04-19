@@ -78,37 +78,26 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
         internal static void RegisterVanillaMaterials(){
             Registries.CreateRegistry(Registries.MaterialRegistryId, new JsonSerializationCodec<IMaterialProperties>());
             Registries.CreateRegistry(Registries.PhaseRegistryId, new JsonSerializationCodec<IPhaseProperties>());
-            Registries.CreateRegistry(Registries.CombustionRegistryId, new JsonSerializationCodec<ICombustionProperties>());
+            Registries.CreateCombustionRegistry(Registries.CombustionRegistryId, new JsonSerializationCodec<ICombustionProperties>());
 
             //materials and their phases
-            Registries.Register(BuildVanilla("oxygen", Chemistry.GasType.Oxygen));
+            Registries.Register(BuildVanillaMaterial("oxygen", Chemistry.GasType.Oxygen));
 
-            Registries.Register(BuildVanilla("carbon_dioxide", Chemistry.GasType.CarbonDioxide));
+            Registries.Register(BuildVanillaMaterial("carbon_dioxide", Chemistry.GasType.CarbonDioxide));
 
-            Registries.Register(BuildVanilla("methane", Chemistry.GasType.Methane));
+            Registries.Register(BuildVanillaMaterial("methane", Chemistry.GasType.Methane));
 
-            Registries.Register(BuildVanilla("nitrogen", Chemistry.GasType.Nitrogen));
+            Registries.Register(BuildVanillaMaterial("nitrogen", Chemistry.GasType.Nitrogen));
 
-            Registries.Register(BuildVanilla("pollutant", Chemistry.GasType.Pollutant));
+            Registries.Register(BuildVanillaMaterial("pollutant", Chemistry.GasType.Pollutant));
 
-            Registries.Register(BuildVanilla("water", Chemistry.GasType.Steam));
+            Registries.Register(BuildVanillaMaterial("water", Chemistry.GasType.Steam));
 
             //TODO: polluted water, changes materials on evaporation
 
-            Registries.Register(BuildVanilla("nitrous_oxide", Chemistry.GasType.NitrousOxide));
+            Registries.Register(BuildVanillaMaterial("nitrous_oxide", Chemistry.GasType.NitrousOxide));
 
-            Registries.RegisterAll(
-                VanillaCombustionProperties.MakeForLiquidAndGas(
-                    "stationeers",
-                    MaterialId(Chemistry.GasType.Oxygen)!.Value,
-                    new MoleQuantity(2.0),
-                    MaterialId(Chemistry.GasType.Methane)!.Value,
-                    MoleQuantity.One,
-                    new MoleEnergy(0.0),
-                    new Dictionary<NamespacedId, MoleQuantity>(){
-                        {MaterialId(Chemistry.GasType.Pollutant)!.Value, new MoleQuantity(3.0)},
-                        {MaterialId(Chemistry.GasType.CarbonDioxide)!.Value, new MoleQuantity(6.0)}
-                    }));
+            Registries.RegisterAll(BuildVanillaCombustion(Chemistry.GasType.Oxygen, Chemistry.GasType.Methane));
 
             //TODO: the other combustions
         }
@@ -129,7 +118,7 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
             );
         }
 
-        private static VanillaMaterialProperties BuildVanilla(
+        private static VanillaMaterialProperties BuildVanillaMaterial(
             string name,
             Chemistry.GasType gasType
         ){
@@ -145,6 +134,37 @@ namespace Com.DipoleCat.ExtensionLib.Atmospherics
                 Mole.MaxLiquidTemperature(gasType),
                 Mole.MinLiquidPressure(gasType)
             );
+        }
+
+        private static IEnumerable<ICombustionProperties> BuildVanillaCombustion(
+            GasType oxidizerType,
+            GasType fuelType
+        ){
+            var oxidizerGasMaterialId = MaterialId(oxidizerType)!.Value;
+            var oxidizerLiquidId = MaterialId(MoleHelper.CondensationType(oxidizerType))!.Value;
+            var fuelGasMaterialId = MaterialId(fuelType)!.Value;
+            var fuelLiquidId = MaterialId(MoleHelper.CondensationType(fuelType))!.Value;
+
+            Assets.Scripts.Atmospherics.Combustion.TryGetResult(fuelType, oxidizerType, out var combustionResult);
+            var results = new Dictionary<NamespacedId, MoleQuantity>();
+            foreach (var output in combustionResult.Outputs){
+                var outputId = MaterialId(output.GasType)!.Value;
+                results[outputId] = output.Quantity;
+            }
+
+            var oxidizerMole = new Mole(oxidizerType, new MoleQuantity(0), new MoleEnergy(0.0));
+            var fuelMole = new Mole(fuelType, new MoleQuantity(0), new MoleEnergy(0.0));
+
+            return VanillaCombustionProperties.MakeForLiquidAndGas(
+                "stationeers",
+                oxidizerGasMaterialId,
+                oxidizerLiquidId,
+                combustionResult.OxidiserMoleCount,
+                fuelGasMaterialId,
+                fuelLiquidId,
+                combustionResult.FuelMoleCount,
+                fuelMole.AutoIgnitionTemperature - oxidizerMole.AutoIgnitionOffset,
+                results);
         }
     }
 }
