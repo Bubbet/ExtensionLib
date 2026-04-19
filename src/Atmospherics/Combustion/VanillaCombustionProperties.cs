@@ -149,7 +149,7 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             combustionEnergy,
             autoIgnitionTemperature,
             results);
-        
+
         yield return new VanillaCombustionProperties(
             new NamespacedId(@namespace, oxidizerLiquidId.Name + "_" + fuelGasId.Name),
             oxidizerLiquidId,
@@ -159,7 +159,7 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             combustionEnergy - oxidizerLatentHeat,
             autoIgnitionTemperature,
             results);
-        
+
         yield return new VanillaCombustionProperties(
             new NamespacedId(@namespace, oxidizerGasId.Name + "_" + fuelLiquidId.Name),
             oxidizerGasId,
@@ -177,6 +177,30 @@ public readonly struct VanillaCombustionProperties : ICombustionProperties
             fuelLiquidId,
             fuelQuantity,
             combustionEnergy - oxidizerLatentHeat - fuelLatentHeat,
+            autoIgnitionTemperature,
+            results);
+    }
+
+    public static IEnumerable<ICombustionProperties> MakeForLiquidAndGas(
+        string @namespace,
+        VanillaMaterialProperties oxidizerMaterial,
+        MoleQuantity oxidizerQuantity,
+        VanillaMaterialProperties fuelMaterial,
+        MoleQuantity fuelQuantity,
+        MoleEnergy combustionEnergy,
+        TemperatureKelvin autoIgnitionTemperature,
+        IDictionary<NamespacedId, MoleQuantity> results
+    ){
+        return MakeForLiquidAndGas(@namespace,
+            oxidizerMaterial.GasPhaseId,
+            oxidizerMaterial.LiquidPhaseId,
+            oxidizerQuantity, 
+            new MoleEnergy(oxidizerMaterial.SpecificLatentHeatOfVaporization.ToDouble()),
+            fuelMaterial.GasPhaseId, 
+            fuelMaterial.LiquidPhaseId, 
+            fuelQuantity,
+            new MoleEnergy(fuelMaterial.SpecificLatentHeatOfVaporization.ToDouble()),
+            combustionEnergy,
             autoIgnitionTemperature,
             results);
     }
