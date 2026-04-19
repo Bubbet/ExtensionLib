@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>14</LangVersion>
+        <AssemblyName>Assembly-CSharp</AssemblyName>
     </PropertyGroup>
     <PropertyGroup>
         <!--keeps tests and extensionlib builds from steppin on each other-->

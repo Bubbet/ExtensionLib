@@ -16,4 +16,5 @@
 
     <SLPPluginPath>$(BIEPluginsDirectory)\StationeersLaunchPad</SLPPluginPath>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)UserOverrides.props" Condition="Exists('$(SolutionDir)UserOverrides.props')"/>
 </Project>
